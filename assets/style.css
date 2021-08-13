@@ -1,0 +1,119 @@
+body {
+  background-color: black;
+  color: yellow;
+}
+
+header {
+  text-align: center;
+}
+
+#menu-bar {
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+  background-image: url("https://upload.wikimedia.org/wikipedia/en/c/cf/Cats_2019_poster.jpg");
+  padding: 2em 0em;
+  margin: 0em;
+}
+
+
+#menu-bar > li {
+  background-color: yellow;
+  color: black;
+  padding: 1em 2em;
+  border-style: solid;
+  border-color: black;
+}
+
+#menu-bar > li:hover {
+  background-color: black;
+  color: yellow;
+  border-color: yellow;
+  transition: .5s
+}
+
+main {
+  display: flex;
+  justify-content: center;
+}
+
+content > img {
+  border-radius: 3em;
+  border-style: solid;
+  border-color: yellow;
+}
+
+aside {
+  background-color: #20335c;
+  margin-left: 2em;
+  text-align: center;
+  max-width: 400px;
+}
+
+aside p {
+  padding: 0 3em;
+}
+
+footer {
+  text-align: center;
+  margin-top: 1em;
+}
+
+.cats-list {
+  text-align: center;
+}
+
+.cat-card {
+  height: 300px;
+  max-width: 600px;
+  margin: 0 auto;
+  border: 2px solid yellow;
+  border-radius: 1em;
+  margin-bottom: 1em;
+  padding: .5em;
+}
+
+.cat-card img{
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  float: left;
+}
+
+form {
+  text-align: center;
+}
+
+.dogs > div {
+  text-align: center;
+}
+
+.dogs > div > img {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  float: left;
+}
+
+.cat-button {
+  width: 28.5%;
+  float: right;
+  margin-right: 10%;
+  padding: 1%;
+  border: solid 2px;
+  border-radius: 8px;
+  margin-bottom: 1em;
+}
+
+.cat-button.tip {
+  background-color:#1e65c2;
+}
+
+.cat-button.delete {
+  background-color: red;
+}
+
+.cat-button:hover {
+  background-color: black;
+  text-decoration: underline;
+}
