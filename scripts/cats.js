@@ -26,7 +26,7 @@ function renderCat(cat){
     <p>Team: ${cat.teamName}</p>
   `
   const tip = document.createElement("p")
-  tip.innerText = `${cat.actor} has $0 in tips!`
+  tip.innerText = `${cat.actor} has $${cat.tip} in tips!`
 
   const tipButton = document.createElement("div")
   tipButton.className = "tip cat-button"
@@ -44,6 +44,23 @@ function renderCat(cat){
     .then(response => response.json())
     .then(() => div.remove())
   })
+
+  tipButton.addEventListener("click", () => {
+    fetch(`${API}/cats/${cat.id}`, {
+      method: 'PATCH', // or 'PUT'
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({tip: cat.tip + 10})
+    })
+    .then(response => response.json())
+    .then(updatedCat => {
+      cat = updatedCat
+      tip.innerText = `${updatedCat.actor} has $${updatedCat.tip} in tips!`
+    })
+  })
+  // PATCH localhost:3000/cats/:id
+
 
   div.append(tip, tipButton, deleteButton)
 
