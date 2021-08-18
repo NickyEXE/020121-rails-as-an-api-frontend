@@ -67,6 +67,30 @@ function renderCat(cat){
   catsList.appendChild(div)
 }
 
+document.querySelector("form").addEventListener("submit", handleSubmit)
+
+function handleSubmit(e){
+  e.preventDefault()
+  const form = e.target
+  const newCat = {
+    name: form.name.value,
+    actor: form.actor.value,
+    team_name: form.teamName.value,
+    description: form.description.value,
+    image: form.image.value
+  }
+  fetch(`${API}/cats`, {
+    method: 'POST', // or 'PUT'
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newCat),
+  })
+  .then(response => response.json())
+  .then(renderCat)
+  form.reset()
+}
+
 // renderCats(cats)
 
 // function renderCat(cat){
