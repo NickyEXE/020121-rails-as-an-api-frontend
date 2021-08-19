@@ -12,62 +12,63 @@ function renderCats(cats){
   body.appendChild(catsList)
   catsList.outerHTML = '<div class="cats-list">'
   cats.forEach(renderCat)
+  addEventListeners()
 }
 
 function renderCat(cat){
   const catsList = document.querySelector(".cats-list")
-  const div = document.createElement("div")
-  div.classList.add("cat-card")
-  div.innerHTML = `
-    <img src="${cat.image}" alt=${cat.name}/>
-    <p><strong>${cat.name}</strong></p>
-    <p>${cat.description}</p>
-    <p>Played by ${cat.actor}</p>
-    <p>Team: ${cat.teamName}</p>
-  `
-  const tip = document.createElement("p")
-  tip.innerText = `${cat.actor} has $${cat.tip} in tips!`
-
-  const tipButton = document.createElement("div")
-  tipButton.className = "tip cat-button"
-  tipButton.innerText = `Tip ${cat.actor} $10.`
-
-  const deleteButton = document.createElement("div")
-  deleteButton.className = "delete cat-button"
-  deleteButton.innerText = `Vanish ${cat.name} to the barge in the Thames!`
-
-  deleteButton.addEventListener("click", () => {
-    // delete request to localhost:3000/cats/${cat.id}
-    fetch(`${API}/cats/${cat.id}`, {
-      method: 'DELETE',
-    })
-    .then(response => response.json())
-    .then(() => div.remove())
-  })
-
-  tipButton.addEventListener("click", () => {
-    fetch(`${API}/cats/${cat.id}`, {
-      method: 'PATCH', // or 'PUT'
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({tip: cat.tip + 10})
-    })
-    .then(response => response.json())
-    .then(updatedCat => {
-      cat = updatedCat
-      tip.innerText = `${updatedCat.actor} has $${updatedCat.tip} in tips!`
-    })
-  })
-  // PATCH localhost:3000/cats/:id
-
-
-  div.append(tip, tipButton, deleteButton)
-
-  catsList.appendChild(div)
+  const {id, image, name, description, actor, teamName, tip} = cat
+  catsList.innerHTML += `
+  <div class="cat-card" data-id=${id}>
+    <img src=${image} alt=${name}/>
+    <p><strong>${name}</strong></p>
+    <p>${description}</p>
+    <p>Played by ${actor}</p>
+    <p>Team: ${teamName}</p>
+    <p class="tip-amount">${actor} has ${tip} in tips!</p>
+    <div class="tip cat-button" data-tip=${tip}>Tip Himself $10.</div>
+    <div class="delete cat-button">Vanish Garfield to the barge in the Thames!</div>
+  </div>`
 }
 
-document.querySelector("form").addEventListener("submit", handleSubmit)
+function addEventListeners(){
+  document.querySelector("form").addEventListener("submit", handleSubmit)
+  document.querySelector(".cats-list").addEventListener("click", handleClick)
+}
+
+function handleClick(e){
+  if (e.target.classList.contains("tip")){
+    tipClick(e)
+  } else if (e.target.classList.contains("delete")){
+    const catCard = e.target.closest(".cat-card")
+    const id = catCard.dataset.id
+    fetch(`${API}/cats/${id}`, {
+      method: "DELETE"
+    })
+    .then(res => res.json())
+    .then(res => {
+      catCard.remove()
+    })
+  }
+}
+
+function tipClick(e){
+  const id = e.target.closest(".cat-card").dataset.id
+  const tip = parseInt(e.target.dataset.tip)
+  fetch(`${API}/cats/${id}`, {
+    method: "PATCH",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({tip: tip + 10}),
+  })
+  .then(res => res.json())
+  .then(cat => {
+    e.target.dataset.tip = cat.tip
+    e.target.closest(".cat-card").querySelector(".tip-amount").innerText = `${cat.actor} has ${cat.tip} in tips!`
+  })
+}
+
 
 function handleSubmit(e){
   e.preventDefault()
