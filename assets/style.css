@@ -64,7 +64,7 @@ footer {
 }
 
 .cat-card {
-  height: 300px;
+  height: 400px;
   max-width: 600px;
   margin: 0 auto;
   border: 2px solid yellow;
@@ -75,7 +75,7 @@ footer {
 
 .cat-card img{
   width: 300px;
-  height: 300px;
+  height: 400px;
   object-fit: cover;
   float: left;
 }
