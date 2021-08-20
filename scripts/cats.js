@@ -1,70 +1,68 @@
 console.log("INEFFABLE!")
 
 const body = document.querySelector("body")
-const API = "http://localhost:3000"
+const form = document.querySelector("form")
+const cats = []
 
-fetch(`${API}/cats`)
-  .then(res => res.json())
-  .then(renderCats)
+adapter.getAllCats().then(renderCats)
 
 function renderCats(cats){
   const catsList = document.createElement("div")
   body.appendChild(catsList)
   catsList.outerHTML = '<div class="cats-list">'
   cats.forEach(renderCat)
+  document.querySelector(".cats-list").addEventListener("click", handleClick)
 }
 
 function renderCat(cat){
-  const catsList = document.querySelector(".cats-list")
-  const div = document.createElement("div")
-  div.classList.add("cat-card")
-  div.innerHTML = `
-    <img src="${cat.image}" alt=${cat.name}/>
-    <p><strong>${cat.name}</strong></p>
-    <p>${cat.description}</p>
-    <p>Played by ${cat.actor}</p>
-    <p>Team: ${cat.teamName}</p>
+  document.querySelector(".cats-list").innerHTML += `
+  <div class="cat-card" data-id=${cat.id}>
+    ${generateCatHTML(cat)}
+  </div>`
+  cats.push(cat)
+}
+
+function generateCatHTML(cat){
+  const { image, name, description, actor, teamName, tip } = cat
+  return `
+  <img src=${image} alt=${name}>
+  <p><strong>${name}</strong></p>
+  <p>${description}</p>
+  <p>Played by ${actor}</p>
+  <p>Team: ${teamName}</p>
+  <p>${actor} has $${tip} in tips!</p>
+  <div class="tip cat-button" data-tip=${tip}>Tip ${actor} $10.</div>
+  <div class="update cat-button" data-tip=${tip}>Edit ${name}.</div>
+  <div class="delete cat-button">Vanish ${name} to the barge in the Thames!</div>
   `
-  const tip = document.createElement("p")
-  tip.innerText = `${cat.actor} has $${cat.tip} in tips!`
+}
 
-  const tipButton = document.createElement("div")
-  tipButton.className = "tip cat-button"
-  tipButton.innerText = `Tip ${cat.actor} $10.`
+const findCat = (id) => cats.find(cat => cat.id === parseInt(id))
 
-  const deleteButton = document.createElement("div")
-  deleteButton.className = "delete cat-button"
-  deleteButton.innerText = `Vanish ${cat.name} to the barge in the Thames!`
+const findCatDiv = (id) => document.querySelector(`[data-id='${id}']`)
 
-  deleteButton.addEventListener("click", () => {
-    // delete request to localhost:3000/cats/${cat.id}
-    fetch(`${API}/cats/${cat.id}`, {
-      method: 'DELETE',
-    })
-    .then(response => response.json())
-    .then(() => div.remove())
-  })
-
-  tipButton.addEventListener("click", () => {
-    fetch(`${API}/cats/${cat.id}`, {
-      method: 'PATCH', // or 'PUT'
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({tip: cat.tip + 10})
-    })
-    .then(response => response.json())
-    .then(updatedCat => {
-      cat = updatedCat
-      tip.innerText = `${updatedCat.actor} has $${updatedCat.tip} in tips!`
-    })
-  })
-  // PATCH localhost:3000/cats/:id
-
-
-  div.append(tip, tipButton, deleteButton)
-
-  catsList.appendChild(div)
+function handleClick(e){
+  if (e.target.classList.contains("cat-button")){
+    const catCard = e.target.closest(".cat-card")
+    const id = catCard.dataset.id
+    if (e.target.classList.contains("tip")){
+      const tip = parseInt(e.target.dataset.tip)
+      adapter.tipCat(id, tip + 10).then(cat => catCard.innerHTML = generateCatHTML(cat))
+    } else if (e.target.classList.contains("delete")){
+      adapter.deleteCat(id).then(() => catCard.remove())
+    } else if (e.target.classList.contains("update")){
+      form.dataset.catId = id
+      const cat = findCat(id)
+      form.name.value = cat.name
+      form.actor.value = cat.actor
+      form.teamName.value = cat.teamName
+      form.description.value = cat.description
+      form.image.value = cat.image
+      form.submit.value = `Edit ${cat.name}`
+      form.scrollIntoView()
+      document.querySelector("h1").innerText = `Edit ${cat.name}`
+    }
+  }
 }
 
 document.querySelector("form").addEventListener("submit", handleSubmit)
@@ -72,23 +70,31 @@ document.querySelector("form").addEventListener("submit", handleSubmit)
 function handleSubmit(e){
   e.preventDefault()
   const form = e.target
-  const newCat = {
+  const cat = {
     name: form.name.value,
     actor: form.actor.value,
     team_name: form.teamName.value,
     description: form.description.value,
     image: form.image.value
   }
-  fetch(`${API}/cats`, {
-    method: 'POST', // or 'PUT'
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(newCat),
-  })
-  .then(response => response.json())
-  .then(renderCat)
+  if (form.dataset.catId){
+    adapter.updateCat(form.dataset.catId, cat).then(cat => {
+      findCatDiv(cat.id).innerHTML = generateCatHTML(cat)
+      cats.splice(cats.findIndex(oldCat => cat.id == oldCat.id), 1, cat)
+      resetForm()
+    })
+  }
+  else {
+    adapter.createCat(cat).then(renderCat)
+    form.reset()
+  }
+}
+
+function resetForm(){
   form.reset()
+  form.removeAttribute("data-cat-id")
+  form.submit.value = "Add your Cat!"
+  document.querySelector("h1").innerText = "Add a New Cat!"
 }
 
 // renderCats(cats)
